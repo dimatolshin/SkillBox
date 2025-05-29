@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15
+    container_name: backend-postgres
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_USER: ${NAME_USER}
+      POSTGRES_PASSWORD: ${NAME_PASSWORD}
+      POSTGRES_DB: ${NAME_DB}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - backend/.env
+    restart: always
+    networks:
+      - network
+
+  backend:
+    build:
+      context: backend
+    container_name: backend-app
+    expose:
+      - "8000"
+    depends_on:
+      - db
+    env_file:
+      - backend/.env
+    volumes:
+      - media_data:/backend/media
+      - static_data:/backend/staticfiles
+    environment:
+      RUNNING_IN_DOCKER: 'true'
+      POSTGRES_USER: ${NAME_USER}
+      POSTGRES_PASSWORD: ${NAME_PASSWORD}
+      POSTGRES_DB: ${NAME_DB}
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+    networks:
+      - network
+
+
+networks:
+  network:
