@@ -15,7 +15,7 @@ services:
       - backend/.env
     restart: always
     networks:
-      - network
+      - traefik-network
 
   backend:
     build:
@@ -40,9 +40,16 @@ services:
       resources:
         limits:
           cpus: "0.5"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.quiz.rule=Host(`quiz.skillbox.by`)"
+      - "traefik.http.routers.quiz.entrypoints=https"
+      - "traefik.http.routers.quiz.tls.certresolver=le"
+      - "traefik.http.services.quiz.loadbalancer.server.port=quiz_port"
     networks:
-      - network
+      - traefik-network
 
 
 networks:
-  network:
+  traefik-network:
+    external: true
